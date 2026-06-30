@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TomoStock</title>
+<style>
+  :root {
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --ink: #1a2233;
+    --muted: #6b7686;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --blue: #2563eb;
+    --blue-light: #dbeafe;
+    --orange: #ea580c;
+    --orange-light: #ffedd5;
+    --red: #dc2626;
+    --red-light: #fee2e2;
+    --border: #e5e9f0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    margin: 0;
+    padding: 16px;
+  }
+  .shell { max-width: 480px; margin: 0 auto; }
+
+  /* LOGIN */
+  .loginCard {
+    background: var(--ink);
+    border-radius: 18px;
+    padding: 32px 24px;
+    color: white;
+    margin-top: 40px;
+  }
+  .loginBrand { font-size: 26px; font-weight: 800; color: #4ade80; }
+  .loginSub { color: #94a3b8; font-size: 14px; margin-top: 4px; }
+  .loginCard label { display: block; font-size: 13px; color: #cbd5e1; margin-top: 18px; margin-bottom: 6px; }
+  .loginCard input {
+    width: 100%; padding: 13px 14px; border-radius: 10px;
+    border: 1px solid #334155; background: #1e293b; color: white; font-size: 15px;
+  }
+  .loginCard button {
+    width: 100%; margin-top: 22px; padding: 14px; border-radius: 10px;
+    border: none; background: #22c55e; color: white; font-weight: 700; font-size: 15px;
+  }
+  .err {
+    background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c;
+    padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-top: 12px;
+  }
+  .ok {
+    background: var(--green-light); border: 1px solid #bbf7d0; color: #15803d;
+    padding: 10px 12px; border-radius: 8px; font-size: 13px; margin-bottom: 12px;
+  }
+
+  /* DASHBOARD */
+  #app-main { display: none; }
+  .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 20px;
+  }
+  .greet h1 { font-size: 22px; margin: 0; font-weight: 800; }
+  .greet p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  .avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: var(--green); color: white; display: flex;
+    align-items: center; justify-content: center; font-weight: 700; cursor: pointer;
+    border: none; font-size: 16px;
+  }
+
+  .statsGrid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;
+  }
+  .statCard {
+    background: var(--card); border-radius: 14px; padding: 16px;
+    border: 1px solid var(--border);
+  }
+  .statIcon {
+    width: 36px; height: 36px; border-radius: 10px; display: flex;
+    align-items: center; justify-content: center; font-size: 18px; margin-bottom: 10px;
+  }
+  .statLabel { color: var(--muted); font-size: 12px; }
+  .statValue { font-size: 22px; font-weight: 800; margin-top: 2px; }
+
+  .sectionTitle { font-size: 15px; font-weight: 700; margin: 22px 0 12px; }
+
+  .actionsGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .actionBtn {
+    border: none; border-radius: 14px; padding: 18px 12px; color: white;
+    font-weight: 700; font-size: 14px; text-align: left; cursor: pointer;
+  }
+  .actionBtn .ic { font-size: 22px; display: block; margin-bottom: 8px; }
+
+  .panel {
+    background: var(--card); border-radius: 14px; padding: 18px;
+    border: 1px solid var(--border); margin-top: 16px;
+  }
+  .panel h3 { margin: 0 0 14px; font-size: 15px; }
+
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .row input {
+    flex: 1; padding: 11px 12px; border-radius: 8px; border: 1px solid var(--border);
+    font-size: 14px; min-width: 80px;
+  }
+  .addBtn {
+    padding: 0 16px; border-radius: 8px; border: none; background: var(--ink);
+    color: white; font-weight: 700; font-size: 14px; cursor: pointer;
+  }
+
+  .productRow {
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border); padding: 12px 0;
+  }
+  .productRow:last-child { border-bottom: none; }
+  .productName { font-weight: 700; font-size: 14px; }
+  .productMeta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .lowStock { color: var(--red); font-weight: 700; }
+  .qtdInput { width: 52px; padding: 8px 4px; text-align: center; border-radius: 8px; border: 1px solid var(--border); }
+  .sellBtn {
+    padding: 8px 14px; border-radius: 8px; border: none; background: var(--green);
+    color: white; font-weight: 700; font-size: 13px; cursor: pointer; white-space: nowrap;
+  }
+  .sellBtn:disabled { background: #cbd5e1; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .logoutLink { text-align: center; margin-top: 18px; }
+  .logoutLink a { color: var(--muted); font-size: 13px; text-decoration: underline; cursor: pointer; }
+
+  .clienteSelect {
+    width: 100%; padding: 11px 12px; border-radius: 8px; border: 1px solid var(--border);
+    font-size: 14px; margin-bottom: 10px; background: white;
+  }
+  .facturaRow {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--border); padding: 12px 0; font-size: 14px;
+  }
+  .facturaRow:last-child { border-bottom: none; }
+  .facturaMeta { color: var(--muted); font-size: 12px; margin-top: 2px; }
+  .badge {
+    background: var(--green-light); color: #15803d; font-size: 11px;
+    font-weight: 700; padding: 3px 8px; border-radius: 999px;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div id="login-screen" class="loginCard">
+    <div class="loginBrand">TomoStock</div>
+    <div class="loginSub">Gestão simples para o teu negócio</div>
+    <label for="email">Email</label>
+    <input id="email" type="email" placeholder="teu@email.com">
+    <label for="senha">Senha</label>
+    <input id="senha" type="password" placeholder="••••••••">
+    <div id="login-error"></div>
+    <button id="btn-login">Entrar</button>
+  </div>
+
+  <div id="app-main">
+    <div class="topbar">
+      <div class="greet">
+        <h1 id="greeting">Olá!</h1>
+        <p>Bem-vindo ao teu sistema de gestão</p>
+      </div>
+      <button class="avatar" id="btn-logout" title="Sair">⏻</button>
+    </div>
+
+    <div class="statsGrid">
+      <div class="statCard">
+        <div class="statIcon" style="background:var(--green-light);">🛒</div>
+        <div class="statLabel">Vendas hoje</div>
+        <div class="statValue" id="stat-vendas-hoje">0 MZN</div>
+      </div>
+      <div class="statCard">
+        <div class="statIcon" style="background:var(--blue-light);">📦</div>
+        <div class="statLabel">Produtos em stock</div>
+        <div class="statValue" id="stat-produtos">0</div>
+      </div>
+      <div class="statCard">
+        <div class="statIcon" style="background:var(--orange-light);">👥</div>
+        <div class="statLabel">Clientes registados</div>
+        <div class="statValue" id="stat-clientes">0</div>
+      </div>
+    </div>
+
+    <div class="sectionTitle">Ações rápidas</div>
+    <div class="actionsGrid">
+      <button class="actionBtn" style="background:var(--green);" onclick="scrollToId('panel-vender')">
+        <span class="ic">🛒</span>Vender
+      </button>
+      <button class="actionBtn" style="background:var(--blue);" onclick="scrollToId('panel-add')">
+        <span class="ic">➕</span>Novo produto
+      </button>
+    </div>
+
+    <div class="panel" id="panel-add">
+      <h3>Adicionar produto</h3>
+      <div class="row">
+        <input id="novo-nome" placeholder="Nome">
+        <input id="novo-preco" type="number" step="0.01" placeholder="Preço">
+        <input id="novo-stock" type="number" placeholder="Stock">
+        <button class="addBtn" id="btn-add">Adicionar</button>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-cliente">
+      <h3>Adicionar cliente</h3>
+      <div class="row">
+        <input id="novo-cliente-nome" placeholder="Nome do cliente">
+        <input id="novo-cliente-tel" placeholder="Telefone (opcional)">
+        <button class="addBtn" id="btn-add-cliente">Adicionar</button>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-vender">
+      <h3>Produtos</h3>
+      <select class="clienteSelect" id="select-cliente">
+        <option value="">Venda sem cliente associado</option>
+      </select>
+      <div id="venda-msg"></div>
+      <div id="lista-produtos"></div>
+    </div>
+
+    <div class="panel" id="panel-facturas">
+      <h3>Facturas recentes</h3>
+      <div id="lista-facturas"></div>
+    </div>
+
+    <div class="logoutLink"><a id="link-logout">Sair</a></div>
+  </div>
+
+</div>
+
+<script>
+const SUPABASE_URL = "https://golwreutojirxmkzfwds.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_75pOoTHpRycyhpPX_A3Hyg_6reIG_-8";
+
+let session = null;
+let userRow = null;
+let produtos = [];
+let vendasHoje = [];
+let clientes = [];
+let facturas = [];
+
+function authHeaders(token) {
+  return {
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: "Bearer " + (token || SUPABASE_ANON_KEY),
+    "Content-Type": "application/json"
+  };
+}
+
+function scrollToId(id) {
+  document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+}
+
+document.getElementById("btn-login").addEventListener("click", doLogin);
+async function doLogin() {
+  const email = document.getElementById("email").value.trim();
+  const senha = document.getElementById("senha").value;
+  const errBox = document.getElementById("login-error");
+  errBox.innerHTML = "";
+  if (!email || !senha) return;
+
+  try {
+    const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=password", {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify({ email, password: senha })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error_description || data.msg || "Falha no login");
+    session = data;
+    await afterLogin();
+  } catch (err) {
+    errBox.innerHTML = '<div class="err">' + (err.message || "Erro ao entrar") + '</div>';
+  }
+}
+
+function doLogout() {
+  session = null; userRow = null; produtos = []; vendasHoje = [];
+  document.getElementById("app-main").style.display = "none";
+  document.getElementById("login-screen").style.display = "block";
+}
+document.getElementById("btn-logout").addEventListener("click", doLogout);
+document.getElementById("link-logout").addEventListener("click", doLogout);
+
+async function afterLogin() {
+  const token = session.access_token;
+  const uid = session.user.id;
+
+  const uRes = await fetch(SUPABASE_URL + "/rest/v1/users?id=eq." + uid + "&select=*", {
+    headers: authHeaders(token)
+  });
+  const uData = await uRes.json();
+  userRow = uData[0];
+
+  document.getElementById("login-screen").style.display = "none";
+  document.getElementById("app-main").style.display = "block";
+  document.getElementById("greeting").textContent = "Olá, " + (userRow ? (userRow.nome || userRow.email).split(" ")[0] : "") + "!";
+
+  if (userRow && userRow.empresa_id) {
+    await loadProdutos();
+    await loadVendasHoje();
+    await loadClientes();
+    await loadFacturas();
+  } else {
+    document.getElementById("lista-produtos").innerHTML =
+      '<div class="err">Utilizador sem empresa associada.</div>';
+  }
+}
+
+async function loadProdutos() {
+  const token = session.access_token;
+  const pRes = await fetch(
+    SUPABASE_URL + "/rest/v1/produtos?empresa_id=eq." + userRow.empresa_id + "&select=*&order=nome.asc",
+    { headers: authHeaders(token) }
+  );
+  produtos = await pRes.json();
+  renderProdutos();
+  document.getElementById("stat-produtos").textContent = produtos.length;
+}
+
+async function loadVendasHoje() {
+  const token = session.access_token;
+  const hoje = new Date().toISOString().slice(0, 10);
+  const vRes = await fetch(
+    SUPABASE_URL + "/rest/v1/vendas?empresa_id=eq." + userRow.empresa_id + "&criado_em=gte." + hoje + "&select=total",
+    { headers: authHeaders(token) }
+  );
+  vendasHoje = await vRes.json();
+  const totalHoje = vendasHoje.reduce((sum, v) => sum + Number(v.total || 0), 0);
+  document.getElementById("stat-vendas-hoje").textContent = totalHoje.toFixed(2) + " MZN";
+}
+
+async function loadClientes() {
+  const token = session.access_token;
+  const cRes = await fetch(
+    SUPABASE_URL + "/rest/v1/clientes?empresa_id=eq." + userRow.empresa_id + "&select=*&order=nome.asc",
+    { headers: authHeaders(token) }
+  );
+  clientes = await cRes.json();
+  document.getElementById("stat-clientes").textContent = clientes.length;
+  renderClientesSelect();
+}
+
+function renderClientesSelect() {
+  const sel = document.getElementById("select-cliente");
+  sel.innerHTML = '<option value="">Venda sem cliente associado</option>' +
+    clientes.map(c => `<option value="${c.id}">${c.nome}</option>`).join("");
+}
+
+document.getElementById("btn-add-cliente").addEventListener("click", async () => {
+  const nome = document.getElementById("novo-cliente-nome").value.trim();
+  const telefone = document.getElementById("novo-cliente-tel").value.trim();
+  if (!nome) return;
+
+  const token = session.access_token;
+  const res = await fetch(SUPABASE_URL + "/rest/v1/clientes", {
+    method: "POST",
+    headers: Object.assign({}, authHeaders(token), { Prefer: "return=representation" }),
+    body: JSON.stringify({ empresa_id: userRow.empresa_id, nome, telefone: telefone || null })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    clientes.push(data[0]);
+    clientes.sort((a, b) => a.nome.localeCompare(b.nome));
+    renderClientesSelect();
+    document.getElementById("stat-clientes").textContent = clientes.length;
+    document.getElementById("novo-cliente-nome").value = "";
+    document.getElementById("novo-cliente-tel").value = "";
+  }
+});
+
+async function loadFacturas() {
+  const token = session.access_token;
+  const fRes = await fetch(
+    SUPABASE_URL + "/rest/v1/facturas?empresa_id=eq." + userRow.empresa_id + "&select=*&order=criado_em.desc&limit=5",
+    { headers: authHeaders(token) }
+  );
+  facturas = await fRes.json();
+  renderFacturas();
+}
+
+function renderFacturas() {
+  const container = document.getElementById("lista-facturas");
+  if (!facturas.length) {
+    container.innerHTML = '<div class="muted">Ainda não há facturas.</div>';
+    return;
+  }
+  container.innerHTML = facturas.map(f => {
+    const cliente = clientes.find(c => c.id === f.cliente_id);
+    return `
+      <div class="facturaRow">
+        <div>
+          <div>${f.numero || ("Factura " + f.id.slice(0, 8))}</div>
+          <div class="facturaMeta">${cliente ? cliente.nome : "Sem cliente"} · ${new Date(f.criado_em).toLocaleDateString("pt-PT")}</div>
+        </div>
+        <div style="text-align:right;">
+          <div><strong>${Number(f.total).toFixed(2)} MZN</strong></div>
+          <span class="badge">${f.status}</span>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+
+function renderProdutos() {
+  const container = document.getElementById("lista-produtos");
+  if (!produtos.length) {
+    container.innerHTML = '<div class="muted">Ainda não há produtos.</div>';
+    return;
+  }
+  container.innerHTML = produtos.map(p => `
+    <div class="productRow">
+      <div style="flex:2;">
+        <div class="productName">${p.nome}</div>
+        <div class="productMeta ${p.stock <= 5 ? 'lowStock' : ''}">
+          ${Number(p.preco).toFixed(2)} MZN · stock: ${p.stock}${p.stock <= 5 ? ' (baixo)' : ''}
+        </div>
+      </div>
+      <input class="qtdInput" type="number" min="1" max="${p.stock}" placeholder="qtd" id="qtd-${p.id}">
+      <button class="sellBtn" onclick="venderProduto('${p.id}')" ${p.stock <= 0 ? "disabled" : ""}>
+        ${p.stock <= 0 ? "Sem stock" : "Vender"}
+      </button>
+    </div>
+  `).join("");
+}
+
+document.getElementById("btn-add").addEventListener("click", async () => {
+  const nome = document.getElementById("novo-nome").value.trim();
+  const preco = document.getElementById("novo-preco").value;
+  const stock = document.getElementById("novo-stock").value || "0";
+  if (!nome || !preco) return;
+
+  const token = session.access_token;
+  const res = await fetch(SUPABASE_URL + "/rest/v1/produtos", {
+    method: "POST",
+    headers: Object.assign({}, authHeaders(token), { Prefer: "return=representation" }),
+    body: JSON.stringify({
+      empresa_id: userRow.empresa_id,
+      nome,
+      preco: parseFloat(preco),
+      stock: parseInt(stock, 10)
+    })
+  });
+  const data = await res.json();
+  if (res.ok) {
+    produtos.push(data[0]);
+    produtos.sort((a, b) => a.nome.localeCompare(b.nome));
+    renderProdutos();
+    document.getElementById("stat-produtos").textContent = produtos.length;
+    document.getElementById("novo-nome").value = "";
+    document.getElementById("novo-preco").value = "";
+    document.getElementById("novo-stock").value = "";
+  }
+});
+
+async function venderProduto(id) {
+  const produto = produtos.find(p => p.id === id);
+  const qtdInput = document.getElementById("qtd-" + id);
+  const qtd = parseInt(qtdInput.value || "1", 10);
+  const msgBox = document.getElementById("venda-msg");
+  const clienteId = document.getElementById("select-cliente").value || null;
+
+  if (!qtd || qtd <= 0) return;
+  if (qtd > produto.stock) {
+    msgBox.innerHTML = '<div class="err">Stock insuficiente para ' + produto.nome + '.</div>';
+    return;
+  }
+
+  const token = session.access_token;
+  const total = qtd * produto.preco;
+
+  const vendaRes = await fetch(SUPABASE_URL + "/rest/v1/vendas", {
+    method: "POST",
+    headers: Object.assign({}, authHeaders(token), { Prefer: "return=representation" }),
+    body: JSON.stringify({
+      empresa_id: userRow.empresa_id,
+      user_id: userRow.id,
+      itens: [{ produto_id: produto.id, nome: produto.nome, qtd, preco: produto.preco }],
+      total
+    })
+  });
+
+  if (!vendaRes.ok) {
+    const err = await vendaRes.json();
+    msgBox.innerHTML = '<div class="err">' + (err.message || "Erro ao registar venda.") + '</div>';
+    return;
+  }
+  const vendaData = await vendaRes.json();
+  const venda = vendaData[0];
+
+  const novoStock = produto.stock - qtd;
+  const updRes = await fetch(SUPABASE_URL + "/rest/v1/produtos?id=eq." + produto.id, {
+    method: "PATCH",
+    headers: Object.assign({}, authHeaders(token), { Prefer: "return=representation" }),
+    body: JSON.stringify({ stock: novoStock })
+  });
+  const updData = await updRes.json();
+  if (!updRes.ok) return;
+
+  produto.stock = updData[0].stock;
+  renderProdutos();
+
+  // Gerar factura automaticamente
+  const numero = "F" + Date.now().toString().slice(-8);
+  await fetch(SUPABASE_URL + "/rest/v1/facturas", {
+    method: "POST",
+    headers: Object.assign({}, authHeaders(token), { Prefer: "return=representation" }),
+    body: JSON.stringify({
+      empresa_id: userRow.empresa_id,
+      venda_id: venda.id,
+      cliente_id: clienteId,
+      numero,
+      status: "pago",
+      total
+    })
+  });
+
+  msgBox.innerHTML = '<div class="ok">Venda de ' + qtd + 'x ' + produto.nome + ' registada — ' + total.toFixed(2) + ' MZN. Factura ' + numero + ' gerada.</div>';
+  qtdInput.value = "";
+  await loadVendasHoje();
+  await loadFacturas();
+}
+</script>
+</body>
+</html>
